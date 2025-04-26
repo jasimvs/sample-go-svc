@@ -1,0 +1,98 @@
+# .golangci.yml
+run:
+  timeout: 5m
+  skip-dirs:
+    - vendor/ # Skip vendor directory if you use it
+
+linters-settings:
+  errcheck:
+    # Report about not checking errors in type assertions: `a := b.(MyStruct)`
+    check-type-assertions: true
+    # Report about assignment to blank identifier: `_ = function()`
+    check-blank: true
+  govet:
+    check-shadowing: true
+  gocyclo:
+    # Minimum complexity to report
+    min-complexity: 15
+  maligned:
+    # Suggest composites with Effective Size >= this
+    suggest-new: true
+  dupl:
+    # Tokens count to trigger issue duplication issue
+    threshold: 100
+  goconst:
+    # Minimum length of string literal that should be converted to constant
+    min-len: 2
+    # Minimum occurrences of constant string literal that should be converted
+    min-occurrences: 3
+  misspell:
+    locale: US
+  lll:
+    # Max line length, lines longer will be reported. Default is 120.
+    line-length: 120
+  goimports:
+    # Put imports beginning with this prefix after 3rd-party packages.
+    # Replace 'your_module_name' with your actual module path!
+    local-prefixes: your_module_name
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - experimental
+      - opinionated
+      - performance
+      - style
+    disabled-checks:
+      - hugeParam # Often necessary
+      - rangeValCopy # Can have false positives
+
+linters:
+  # Disable all linters by default and explicitly enable specific ones.
+  disable-all: true
+  enable:
+    - bodyclose
+    - deadcode # Find dead code.
+    - dogsled
+    - dupl
+    - errcheck # Check for unchecked errors. Essential.
+    - exportloopref
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt # Check if code is formatted with gofmt.
+    - goimports # Organizes imports. Essential.
+    - gosimple # Suggest code simplifications.
+    - govet # Standard Go vet checks. Essential.
+    - ineffassign # Detects when assignments aren't used.
+    - lll # Checks line length.
+    - misspell # Corrects commonly misspelled English words in comments/strings.
+    - nakedret
+    - rowserrcheck
+    - staticcheck # A suite of powerful static analysis checks.
+    - structcheck # Find unused struct fields.
+    - stylecheck # Alternative style checks.
+    - typecheck # Ensure code type-checks.
+    - unconvert
+    - unparam # Find unused function parameters.
+    - unused # Find unused constants, functions, types, and variables. Essential.
+    - varcheck # Find unused global variables and constants.
+    - whitespace
+
+issues:
+  # Maximum issues count per one linter. Set to 0 to disable. Default is 50.
+  max-issues-per-linter: 0
+  # Maximum count of issues with the same text. Set to 0 to disable. Default is 3.
+  max-same-issues: 0
+  # Exclude specific issues or patterns if necessary
+  # exclude-rules:
+  #   - path: _test\.go
+  #     linters:
+  #       - dupl
+  #       - funlen
+
+# Output format options
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+  
