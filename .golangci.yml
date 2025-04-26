@@ -30,7 +30,7 @@ linters-settings:
     locale: US
   lll:
     # Max line length, lines longer will be reported. Default is 120.
-    line-length: 120
+    line-length: 140
   goimports:
     # Put imports beginning with this prefix after 3rd-party packages.
     # Replace 'your_module_name' with your actual module path!

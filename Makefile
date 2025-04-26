@@ -44,3 +44,11 @@ tidy: ## Tidy Go module files
 clean: ## Remove the built binary
 	@echo "==> Cleaning..."
 	rm -f $(BINARY_NAME)
+
+test:
+	@echo "==> Running Tests..."
+	go test ./...
+
+fmt:
+	@echo "==> Formatting..."
+	gofmt -s -w .

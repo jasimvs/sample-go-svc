@@ -1,2 +1,9 @@
 
-serverPort: "9090"
+server:
+  port: "9090"
+
+database:
+  filepath: "./data/transactions.db"
+  max_open_conns: 1
+  max_idle_conns: 1
+  conn_max_lifetime: "1h" 
