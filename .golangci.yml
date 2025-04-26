@@ -1,8 +1,6 @@
 # .golangci.yml
 run:
   timeout: 5m
-  skip-dirs:
-    - vendor/ # Skip vendor directory if you use it
 
 linters-settings:
   errcheck:
@@ -11,7 +9,7 @@ linters-settings:
     # Report about assignment to blank identifier: `_ = function()`
     check-blank: true
   govet:
-    check-shadowing: true
+    shadow: true
   gocyclo:
     # Minimum complexity to report
     min-complexity: 15
@@ -51,11 +49,9 @@ linters:
   disable-all: true
   enable:
     - bodyclose
-    - deadcode # Find dead code.
     - dogsled
     - dupl
     - errcheck # Check for unchecked errors. Essential.
-    - exportloopref
     - goconst
     - gocritic
     - gocyclo
@@ -69,13 +65,11 @@ linters:
     - nakedret
     - rowserrcheck
     - staticcheck # A suite of powerful static analysis checks.
-    - structcheck # Find unused struct fields.
     - stylecheck # Alternative style checks.
     - typecheck # Ensure code type-checks.
     - unconvert
     - unparam # Find unused function parameters.
     - unused # Find unused constants, functions, types, and variables. Essential.
-    - varcheck # Find unused global variables and constants.
     - whitespace
 
 issues:
@@ -89,10 +83,12 @@ issues:
   #     linters:
   #       - dupl
   #       - funlen
+  exclude-dirs:
+      - vendor/ # Skip vendor directory if you use it  
 
 # Output format options
 output:
-  format: colored-line-number
+  formats: colored-line-number
   print-issued-lines: true
   print-linter-name: true
   

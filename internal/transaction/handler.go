@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jasimvs/sample-go-svc/internal/model"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +20,7 @@ func NewHandler(svc Service) *Handler {
 
 func (h *Handler) CreateTransaction(c echo.Context) error {
 	// Ideally, get the user ID from JWT token and pass it to the service to validate
-	var req Transaction
+	var req model.Transaction
 	if err := c.Bind(&req); err != nil {
 		log.Printf("Handler: Error binding request for create transaction: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid request body: %v", err))

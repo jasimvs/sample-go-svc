@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jasimvs/sample-go-svc/internal/model"
 )
 
 var (
@@ -26,17 +27,17 @@ func NewService(repo Repository) Service {
 	return Service{repo: repo}
 }
 
-func (s *Service) CreateTransaction(ctx context.Context, tx Transaction) (Transaction, error) {
+func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (model.Transaction, error) {
 	tx.ID = "tx_" + uuid.NewString()
 	log.Printf("Service: Generated new transaction ID: %s", tx.ID)
 
 	if tx.Type == "" {
-		return Transaction{}, fmt.Errorf("%w: missing required field: type", ErrValidation)
+		return model.Transaction{}, fmt.Errorf("%w: missing required field: type", ErrValidation)
 	}
 
 	if !isValidTransactionType(tx.Type) {
 		allowedTypes := fmt.Sprintf("'%s', '%s', '%s'", DepositType, WithdrawalType, TransferType)
-		return Transaction{}, fmt.Errorf("%w: invalid transaction type '%s', must be one of [%s]", ErrValidation, tx.Type, allowedTypes)
+		return model.Transaction{}, fmt.Errorf("%w: invalid transaction type '%s', must be one of [%s]", ErrValidation, tx.Type, allowedTypes)
 	}
 
 	tx.Timestamp = time.Now().UTC()
@@ -46,7 +47,7 @@ func (s *Service) CreateTransaction(ctx context.Context, tx Transaction) (Transa
 	err := s.repo.Save(ctx, tx)
 	if err != nil {
 		log.Printf("Service: Error saving transaction ID %s: %v", tx.ID, err)
-		return Transaction{}, fmt.Errorf("failed to save transaction: %w", err)
+		return model.Transaction{}, fmt.Errorf("failed to save transaction: %w", err)
 	}
 
 	log.Printf("Service: Successfully saved transaction ID %s", tx.ID)

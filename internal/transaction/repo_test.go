@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jasimvs/sample-go-svc/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -80,7 +81,7 @@ func TestSQLiteRepository_Save_Success(t *testing.T) {
 	require.NoError(t, err, "Migration failed before saving")
 
 	// --- Prepare Test Data ---
-	saveTx := Transaction{
+	saveTx := model.Transaction{
 		ID:        "save_test_" + uuid.NewString()[:8],
 		Amount:    123.45,
 		Type:      DepositType,
@@ -124,13 +125,13 @@ func TestSQLiteRepository_Save_DuplicateID(t *testing.T) {
 
 	// --- Prepare Test Data ---
 	commonID := "duplicate_save_" + uuid.NewString()[:8]
-	tx1 := Transaction{
+	tx1 := model.Transaction{
 		ID:        commonID,
 		Amount:    10.0,
 		Type:      TransferType,
 		Timestamp: time.Now(),
 	}
-	tx2 := Transaction{ // Same ID
+	tx2 := model.Transaction{ // Same ID
 		ID:        commonID,
 		Amount:    20.0,
 		Type:      DepositType,

@@ -5,7 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
+
+	"github.com/jasimvs/sample-go-svc/internal/model"
 )
 
 var ErrTransactionNotFound = errors.New("transaction not found")
@@ -16,16 +17,9 @@ const (
 	TransferType   = "transfer"
 )
 
-type Transaction struct {
-	ID        string    `json:"id" db:"id"`
-	Amount    float64   `json:"amount" db:"amount"`
-	Type      string    `json:"type" db:"type"`
-	Timestamp time.Time `json:"timestamp" db:"timestamp"`
-}
-
 type Repository interface {
 	Migrate(ctx context.Context) error
-	Save(ctx context.Context, tx Transaction) error
+	Save(ctx context.Context, tx model.Transaction) error
 }
 
 type sqliteRepository struct {
@@ -56,7 +50,7 @@ func (r *sqliteRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func (r *sqliteRepository) Save(ctx context.Context, tx Transaction) error {
+func (r *sqliteRepository) Save(ctx context.Context, tx model.Transaction) error {
 	query := `INSERT INTO transactions (id, amount, type, timestamp) VALUES (?, ?, ?, ?)`
 	_, err := r.db.ExecContext(ctx, query,
 		tx.ID,
