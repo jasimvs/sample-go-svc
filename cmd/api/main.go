@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/jasimvs/sample-go-svc/config"
+	"github.com/jasimvs/sample-go-svc/internal/detection"
+	"github.com/jasimvs/sample-go-svc/internal/model"
 	"github.com/jasimvs/sample-go-svc/internal/transaction"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -51,7 +53,9 @@ func main() {
 	e.Use(middleware.BodyLimit("1M")) // Good practice for POST
 
 	// --- Handlers ---
-	txService := transaction.NewService(txRepo)
+	transactionChannel := make(chan model.Transaction)
+
+	txService := transaction.NewService(txRepo, transactionChannel)
 	txHandler := transaction.NewHandler(txService)
 
 	// --- Routes ---
@@ -60,6 +64,8 @@ func main() {
 	})
 	apiGroup := e.Group("/api/v1")
 	apiGroup.POST("/transaction", txHandler.CreateTransaction)
+
+	detection.NewManager(transactionChannel, detection.NewHighVolumeRule()).RunInBackground()
 
 	startServer(cfg, e)
 }

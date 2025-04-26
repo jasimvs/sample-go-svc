@@ -17,14 +17,15 @@ var (
 )
 
 type Service struct {
-	repo Repository
+	repo              Repository
+	createdTxnChannel chan<- model.Transaction
 }
 
-func NewService(repo Repository) Service {
+func NewService(repo Repository, createdTxnChannel chan<- model.Transaction) Service {
 	if repo == nil {
 		panic("Repository cannot be nil for transaction.NewService")
 	}
-	return Service{repo: repo}
+	return Service{repo: repo, createdTxnChannel: createdTxnChannel}
 }
 
 func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (model.Transaction, error) {
@@ -49,7 +50,7 @@ func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (
 		log.Printf("Service: Error saving transaction ID %s: %v", tx.ID, err)
 		return model.Transaction{}, fmt.Errorf("failed to save transaction: %w", err)
 	}
-
+	s.createdTxnChannel <- tx
 	log.Printf("Service: Successfully saved transaction ID %s", tx.ID)
 	return tx, nil
 }
