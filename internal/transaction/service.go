@@ -41,6 +41,10 @@ func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (
 		return model.Transaction{}, fmt.Errorf("%w: invalid transaction type '%s', must be one of [%s]", ErrValidation, tx.Type, allowedTypes)
 	}
 
+	if tx.UserID == "" { // ideally do not add User ID in body, instead get it from JWT token. Or a UserID in body should be verified   
+		return model.Transaction{}, fmt.Errorf("%w: missing required field: user_id", ErrValidation)
+	}
+
 	tx.Timestamp = time.Now().UTC()
 	log.Printf("Service: Setting transaction timestamp for ID %s to %s", tx.ID, tx.Timestamp)
 

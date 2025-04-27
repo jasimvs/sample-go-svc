@@ -56,16 +56,16 @@ func TestSQLiteRepository_Migrate(t *testing.T) {
 	require.NoError(t, err, "First migration failed")
 
 	// --- Verify Table Exists (by trying to insert) ---
-	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, amount, type, timestamp) VALUES (?, ?, ?, ?)`,
-		"migrate_test_id", 1.0, DepositType, time.Now())
+	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, user_id, amount, type, timestamp) VALUES (?, ?, ?, ?, ?)`,
+		"migrate_test_id", "user_id_1", 1.0, DepositType, time.Now())
 	require.NoError(t, err, "Failed to insert into table after first migration, table might not exist or schema is wrong")
 
 	// --- Second Migration (Idempotency check) ---
 	err = repo.Migrate(ctx)
 	require.NoError(t, err, "Second migration (idempotency check) failed")
 
-	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, amount, type, timestamp) VALUES (?, ?, ?, ?)`,
-		"migrate_test_id_2", 2.0, WithdrawalType, time.Now())
+	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, user_id, amount, type, timestamp) VALUES (?, ?, ?, ?, ?)`,
+		"migrate_test_id_2", "user_id_1", 2.0, WithdrawalType, time.Now())
 	require.NoError(t, err, "Failed to insert into table after second migration")
 }
 
@@ -83,6 +83,7 @@ func TestSQLiteRepository_Save_Success(t *testing.T) {
 	// --- Prepare Test Data ---
 	saveTx := model.Transaction{
 		ID:        "save_test_" + uuid.NewString()[:8],
+		UserID:    "user_id_1",
 		Amount:    123.45,
 		Type:      DepositType,
 		Timestamp: time.Now().UTC().Truncate(time.Second), // Truncate for comparison
@@ -95,19 +96,22 @@ func TestSQLiteRepository_Save_Success(t *testing.T) {
 	// --- Verify Insertion (using raw db connection) ---
 	var (
 		retrievedID     string
+		retrievedUserID string
 		retrievedAmount float64
 		retrievedType   string
 		retrievedTS     time.Time
 	)
-	query := "SELECT id, amount, type, timestamp FROM transactions WHERE id = ?"
+	query := "SELECT id, user_id, amount, type, timestamp FROM transactions WHERE id = ?"
 	row := db.QueryRowContext(ctx, query, saveTx.ID)
-	err = row.Scan(&retrievedID, &retrievedAmount, &retrievedType, &retrievedTS)
+	err = row.Scan(&retrievedID, &retrievedUserID, &retrievedAmount, &retrievedType, &retrievedTS)
 	require.NoError(t, err, "Failed to query and scan the saved row")
 
 	// --- Assertions ---
 	assert.Equal(t, saveTx.ID, retrievedID)
+	assert.Equal(t, saveTx.UserID, retrievedUserID)
 	assert.Equal(t, saveTx.Amount, retrievedAmount)
 	assert.Equal(t, saveTx.Type, retrievedType)
+
 	// Use WithinDuration for time comparison due to potential db precision differences
 	assert.WithinDuration(t, saveTx.Timestamp, retrievedTS, time.Second)
 }
@@ -127,12 +131,14 @@ func TestSQLiteRepository_Save_DuplicateID(t *testing.T) {
 	commonID := "duplicate_save_" + uuid.NewString()[:8]
 	tx1 := model.Transaction{
 		ID:        commonID,
+		UserID:    "user_id_1",
 		Amount:    10.0,
 		Type:      TransferType,
 		Timestamp: time.Now(),
 	}
 	tx2 := model.Transaction{ // Same ID
 		ID:        commonID,
+		UserID:    "user_id_2",
 		Amount:    20.0,
 		Type:      DepositType,
 		Timestamp: time.Now(),

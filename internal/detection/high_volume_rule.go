@@ -5,7 +5,7 @@ import (
 )
 
 const highVolumeRuleName = "HighVolumeTransaction"
-const amountThreshold = 10000 // todo make it configurable
+const amountThreshold = 10000
 
 type HighVolumeRule struct {
 	AmountThreshold float64
@@ -13,7 +13,7 @@ type HighVolumeRule struct {
 
 func NewHighVolumeRule() *HighVolumeRule {
 	return &HighVolumeRule{
-		AmountThreshold: amountThreshold,
+		AmountThreshold: amountThreshold,  // todo make it configurable
 	}
 }
 

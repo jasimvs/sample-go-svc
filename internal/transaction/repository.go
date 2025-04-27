@@ -37,6 +37,7 @@ func (r *sqliteRepository) Migrate(ctx context.Context) error {
 	query := `
     CREATE TABLE IF NOT EXISTS transactions (
         id TEXT PRIMARY KEY,
+		user_id TEXT NOT NULL,
         amount REAL NOT NULL,
         type TEXT NOT NULL,
         timestamp TIMESTAMP NOT NULL
@@ -51,9 +52,10 @@ func (r *sqliteRepository) Migrate(ctx context.Context) error {
 }
 
 func (r *sqliteRepository) Save(ctx context.Context, tx model.Transaction) error {
-	query := `INSERT INTO transactions (id, amount, type, timestamp) VALUES (?, ?, ?, ?)`
+	query := `INSERT INTO transactions (id, user_id, amount, type, timestamp) VALUES (?, ?, ?, ?, ?)`
 	_, err := r.db.ExecContext(ctx, query,
 		tx.ID,
+		tx.UserID,
 		tx.Amount,
 		tx.Type,
 		tx.Timestamp,
