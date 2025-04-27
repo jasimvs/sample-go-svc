@@ -45,6 +45,10 @@ func main() {
 	if err := txRepo.Migrate(ctx); err != nil {
 		log.Fatalf("Database migration failed: %v", err) //nolint:gocritic,exitAfterDefer
 	}
+	detectionRepo, err := detection.NewSQLiteRepository(db)
+	if err != nil {
+		log.Fatalf("Failed to create detection repository: %v", err)
+	}
 
 	// --- Echo Instance & Middleware ---
 	e := echo.New()
@@ -57,18 +61,7 @@ func main() {
 
 	txService := transaction.NewService(txRepo, transactionChannel)
 	txHandler := transaction.NewHandler(txService)
-
-	// --- Routes ---
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Welcome to the Transaction API!")
-	})
-	apiGroup := e.Group("/api/v1")
-	apiGroup.POST("/transaction", txHandler.CreateTransaction)
-
-	detectionRepo, err := detection.NewSQLiteRepository(db)
-	if err != nil {
-		log.Fatalf("Failed to create detection repository: %v", err)
-	}
+	detectionHandler := detection.NewHandler(detectionRepo)
 
 	highVolRule := detection.NewHighVolumeRule()
 	freqSmallRule := detection.NewFrequentSmallTransactionsRule(detectionRepo, 10, 100.0, 1*time.Hour)
@@ -76,6 +69,14 @@ func main() {
 
 	rules := []detection.Rule{highVolRule, freqSmallRule, rapidTransRule}
 	detection.NewManager(transactionChannel, detectionRepo, rules...).RunInBackground()
+
+	// --- Routes ---
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "Welcome to the Transaction API!")
+	})
+	apiGroup := e.Group("/api/v1")
+	apiGroup.POST("/transaction", txHandler.CreateTransaction)
+	apiGroup.GET("/transactions", detectionHandler.GetTransactions)
 
 	startServer(cfg, e)
 }

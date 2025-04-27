@@ -60,3 +60,4 @@ Modify port in config.yaml, set to 9090
      -H "Content-Type: application/json" \
      -d '{ "userId":"user_1", "amount": 41005.00, "type": "withdrawal"}'
 
+```curl -X GET "http://localhost:9090/api/v1/transactions?user_id=user_1&suspicious=true" | jq .
