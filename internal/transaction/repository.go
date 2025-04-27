@@ -11,12 +11,6 @@ import (
 
 var ErrTransactionNotFound = errors.New("transaction not found")
 
-const (
-	DepositType    = "deposit"
-	WithdrawalType = "withdrawal"
-	TransferType   = "transfer"
-)
-
 type Repository interface {
 	Migrate(ctx context.Context) error
 	Save(ctx context.Context, tx model.Transaction) error
@@ -40,14 +34,29 @@ func (r *sqliteRepository) Migrate(ctx context.Context) error {
 		user_id TEXT NOT NULL,
         amount REAL NOT NULL,
         type TEXT NOT NULL,
-        timestamp TIMESTAMP NOT NULL
+        timestamp TIMESTAMP NOT NULL,
+		is_suspicious INTEGER NOT NULL DEFAULT 0,
+		flagged_rules TEXT
     );`
 
+	indexQueries := []string{
+		`CREATE INDEX IF NOT EXISTS idx_transactions_user_type_timestamp ON transactions(user_id, type, timestamp);`,
+		`CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON transactions(timestamp);`,
+		`CREATE INDEX IF NOT EXISTS idx_transactions_user_suspicious ON transactions(user_id, is_suspicious);`,
+		`CREATE INDEX IF NOT EXISTS idx_transactions_amount ON transactions(amount);`,
+	}
 	_, err := r.db.ExecContext(ctx, query)
 	if err != nil {
 		return fmt.Errorf("failed to create transactions table: %w", err)
 	}
-	fmt.Println("Transaction repository migration successful (type as TEXT).")
+	for _, indexQuery := range indexQueries {
+		_, err := r.db.ExecContext(ctx, indexQuery)
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("Transaction repository migration successful.")
 	return nil
 }
 

@@ -37,11 +37,11 @@ func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (
 	}
 
 	if !isValidTransactionType(tx.Type) {
-		allowedTypes := fmt.Sprintf("'%s', '%s', '%s'", DepositType, WithdrawalType, TransferType)
+		allowedTypes := fmt.Sprintf("'%s', '%s', '%s'", model.DepositType, model.WithdrawalType, model.TransferType)
 		return model.Transaction{}, fmt.Errorf("%w: invalid transaction type '%s', must be one of [%s]", ErrValidation, tx.Type, allowedTypes)
 	}
 
-	if tx.UserID == "" { // ideally do not add User ID in body, instead get it from JWT token. Or a UserID in body should be verified   
+	if tx.UserID == "" { // ideally do not add User ID in body, instead get it from JWT token. Or a UserID in body should be verified
 		return model.Transaction{}, fmt.Errorf("%w: missing required field: user_id", ErrValidation)
 	}
 
@@ -61,7 +61,7 @@ func (s *Service) CreateTransaction(ctx context.Context, tx model.Transaction) (
 
 func isValidTransactionType(txType string) bool {
 	switch txType {
-	case DepositType, WithdrawalType, TransferType:
+	case model.DepositType, model.WithdrawalType, model.TransferType:
 		return true
 	default:
 		return false

@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"github.com/jasimvs/sample-go-svc/config"
-	"github.com/jasimvs/sample-go-svc/internal/detection"
+	detection "github.com/jasimvs/sample-go-svc/internal/detection"
 	"github.com/jasimvs/sample-go-svc/internal/model"
 	"github.com/jasimvs/sample-go-svc/internal/transaction"
 	"github.com/labstack/echo/v4"
@@ -65,7 +65,17 @@ func main() {
 	apiGroup := e.Group("/api/v1")
 	apiGroup.POST("/transaction", txHandler.CreateTransaction)
 
-	detection.NewManager(transactionChannel, detection.NewHighVolumeRule()).RunInBackground()
+	detectionRepo, err := detection.NewSQLiteRepository(db)
+	if err != nil {
+		log.Fatalf("Failed to create detection repository: %v", err)
+	}
+
+	highVolRule := detection.NewHighVolumeRule()
+	freqSmallRule := detection.NewFrequentSmallTransactionsRule(detectionRepo, 10, 100.0, 1*time.Hour)
+	rapidTransRule := detection.NewRapidTransfersRule(detectionRepo, 3, 5*time.Minute)
+
+	rules := []detection.Rule{highVolRule, freqSmallRule, rapidTransRule}
+	detection.NewManager(transactionChannel, detectionRepo, rules...).RunInBackground()
 
 	startServer(cfg, e)
 }

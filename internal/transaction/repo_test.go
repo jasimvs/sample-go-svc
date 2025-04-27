@@ -57,7 +57,7 @@ func TestSQLiteRepository_Migrate(t *testing.T) {
 
 	// --- Verify Table Exists (by trying to insert) ---
 	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, user_id, amount, type, timestamp) VALUES (?, ?, ?, ?, ?)`,
-		"migrate_test_id", "user_id_1", 1.0, DepositType, time.Now())
+		"migrate_test_id", "user_id_1", 1.0, model.DepositType, time.Now())
 	require.NoError(t, err, "Failed to insert into table after first migration, table might not exist or schema is wrong")
 
 	// --- Second Migration (Idempotency check) ---
@@ -65,7 +65,7 @@ func TestSQLiteRepository_Migrate(t *testing.T) {
 	require.NoError(t, err, "Second migration (idempotency check) failed")
 
 	_, err = db.ExecContext(ctx, `INSERT INTO transactions (id, user_id, amount, type, timestamp) VALUES (?, ?, ?, ?, ?)`,
-		"migrate_test_id_2", "user_id_1", 2.0, WithdrawalType, time.Now())
+		"migrate_test_id_2", "user_id_1", 2.0, model.WithdrawalType, time.Now())
 	require.NoError(t, err, "Failed to insert into table after second migration")
 }
 
@@ -85,7 +85,7 @@ func TestSQLiteRepository_Save_Success(t *testing.T) {
 		ID:        "save_test_" + uuid.NewString()[:8],
 		UserID:    "user_id_1",
 		Amount:    123.45,
-		Type:      DepositType,
+		Type:      model.DepositType,
 		Timestamp: time.Now().UTC().Truncate(time.Second), // Truncate for comparison
 	}
 
@@ -133,14 +133,14 @@ func TestSQLiteRepository_Save_DuplicateID(t *testing.T) {
 		ID:        commonID,
 		UserID:    "user_id_1",
 		Amount:    10.0,
-		Type:      TransferType,
+		Type:      model.TransferType,
 		Timestamp: time.Now(),
 	}
 	tx2 := model.Transaction{ // Same ID
 		ID:        commonID,
 		UserID:    "user_id_2",
 		Amount:    20.0,
-		Type:      DepositType,
+		Type:      model.DepositType,
 		Timestamp: time.Now(),
 	}
 

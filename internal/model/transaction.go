@@ -11,3 +11,9 @@ type Transaction struct {
 	Type      string    `json:"type" db:"type"`
 	Timestamp time.Time `json:"timestamp" db:"timestamp"`
 }
+
+const (
+	DepositType    = "deposit"
+	WithdrawalType = "withdrawal"
+	TransferType   = "transfer"
+)
