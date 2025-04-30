@@ -25,9 +25,18 @@ When building an API you would typically need the following. Not implementing th
 - Rate limiting to prevent DDOS (by IP, user ID, or more advanced heuristics to detect coordinated attacks)
 - Traceability - adding open tracing info to requests makes debugging in distributed systems easy and quick. We wont be adding tracing
 - OpenAPI doc - good for public APIs or exposing APIs to other teams or 3rd party. We wont be adding this 
-- Logging - In real, typically a log aggregator will push the logs to an logging tool like ELK, Datadog or New Relic. 
+- Logging - In real, typically a log aggregator will push the logs to an logging tool like ELK, Datadog or New Relic.
+- Health endpoints for checking uptime
 
 Creating your API using database model is quick, but its better to have separate models for communication and data storage. For e.g. You often dont want a client API to pass the transaction ID or timestamp from client when creating. And you may want to add modified_at field or metadata in storage, and mostly not needed to expose it via an API.
+
+I will describe my journey for creating this service:
+- Created a REST endpoint - Post transaction which simply responds with a 201 (no functionality implemented)
+- Added lint, build, run scripts (used Makefile)
+- Added a DB with repository pattern with integration tests
+- Created detection module,  moved Transaction model to a shared model package, used channel to seperate the create and suspected transactin detectinon processing. Iinitially planned to create a detection table with transaction id (foreign key) and the relevant fields. However, looking at the Get suspicious transactions requirement, realized would have to join the tables for all GET requests. Not good for scaling, so the other choice is to duplicate all required data in a the suspected transactions table. If data stroage cost isnt is a concern, thats a good idea. However, to begin with I just added the new fields to the existing transactions table, will refactor it later.
+- Added the business rules for marking transaction successful
+- Added the Get suspicious transactions REST endpoint with functionality  
 
 
 ## Run
