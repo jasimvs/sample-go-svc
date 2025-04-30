@@ -33,10 +33,10 @@ Creating your API using database model is quick, but its better to have separate
 I will describe my journey for creating this service:
 - Created a REST endpoint - Post transaction which simply responds with a 201 (no functionality implemented)
 - Added lint, build, run scripts (used Makefile)
-- Added a DB with repository pattern with integration tests
-- Created detection module,  moved Transaction model to a shared model package, used channel to seperate the create and suspected transactin detectinon processing. Iinitially planned to create a detection table with transaction id (foreign key) and the relevant fields. However, looking at the Get suspicious transactions requirement, realized would have to join the tables for all GET requests. Not good for scaling, so the other choice is to duplicate all required data in a the suspected transactions table. If data stroage cost isnt is a concern, thats a good idea. However, to begin with I just added the new fields to the existing transactions table, will refactor it later.
+- Added a DB with repository pattern with integration tests, wired up the create transaction flow 
+- Created detection module, moved Transaction model to a shared model package, used channel to separate concerns,  create and suspected transaction detection processing. Initially planned to create a detection table with transaction id (foreign key) and the relevant fields. However, looking at the Get suspicious transactions requirement, realized would have to join the tables for all GET requests. Not good for scaling, so the other choice is to duplicate all required data in a the suspected transactions table. If data storage cost isn't is a concern, that's a good idea. However, to begin with I just added the new fields to the existing transactions table, will refactor it later.
 - Added the business rules for marking transaction successful
-- Added the Get suspicious transactions REST endpoint with functionality  
+- Added the Get suspicious transactions REST endpoint with functionality 
 
 
 ## Run
