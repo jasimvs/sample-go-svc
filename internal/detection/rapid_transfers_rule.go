@@ -11,21 +11,21 @@ const rapidTransfersRuleName = "RapidTransfers"
 
 type RapidTransfersRule struct {
 	repo           Repository
-	MinConsecutive int
-	WindowDuration time.Duration
+	minConsecutive int
+	windowDuration time.Duration
 }
 
 func NewRapidTransfersRule(repo Repository, minConsecutive int, windowDuration time.Duration) *RapidTransfersRule {
 	return &RapidTransfersRule{
 		repo:           repo,
-		MinConsecutive: minConsecutive,
-		WindowDuration: windowDuration,
+		minConsecutive: minConsecutive,
+		windowDuration: windowDuration,
 	}
 }
 
 func (r *RapidTransfersRule) DetectSuspiciousActivity(txn model.Transaction) (bool, string, error) {
 
-	windowStart := txn.Timestamp.Add(-r.WindowDuration)
+	windowStart := txn.Timestamp.Add(-r.windowDuration)
 
 	filters := Filter{
 		UserID: txn.UserID,
@@ -41,7 +41,7 @@ func (r *RapidTransfersRule) DetectSuspiciousActivity(txn model.Transaction) (bo
 		return false, "", err
 	}
 
-	if len(recentTxns) >= r.MinConsecutive {
+	if len(recentTxns) >= r.minConsecutive {
 		return true, rapidTransfersRuleName, nil
 	}
 

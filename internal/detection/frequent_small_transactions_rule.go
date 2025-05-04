@@ -11,9 +11,9 @@ const frequentSmallTransactionsRuleName = "FrequentSmallTransactions"
 
 type FrequentSmallTransactionsRule struct {
 	repo            Repository
-	MaxCount        int
-	ThresholdAmount float64
-	WindowDuration  time.Duration
+	maxCount        int
+	thresholdAmount float64
+	windowDuration  time.Duration
 }
 
 func NewFrequentSmallTransactionsRule(repo Repository, maxCount int, thresholdAmount float64, windowDuration time.Duration) *FrequentSmallTransactionsRule {
@@ -22,21 +22,21 @@ func NewFrequentSmallTransactionsRule(repo Repository, maxCount int, thresholdAm
 	}
 	return &FrequentSmallTransactionsRule{
 		repo:            repo,
-		MaxCount:        maxCount,
-		ThresholdAmount: thresholdAmount,
-		WindowDuration:  windowDuration,
+		maxCount:        maxCount,
+		thresholdAmount: thresholdAmount,
+		windowDuration:  windowDuration,
 	}
 }
 func (r *FrequentSmallTransactionsRule) DetectSuspiciousActivity(txn model.Transaction) (bool, string, error) {
-	if txn.Amount >= r.ThresholdAmount {
+	if txn.Amount >= r.thresholdAmount {
 		return false, "", nil
 	}
 
-	windowStart := txn.Timestamp.Add(-r.WindowDuration)
+	windowStart := txn.Timestamp.Add(-r.windowDuration)
 
 	filters := Filter{
 		UserID:         txn.UserID,
-		AmountLessThan: &r.ThresholdAmount,
+		AmountLessThan: &r.thresholdAmount,
 		Since:          &windowStart,
 	}
 
@@ -49,7 +49,7 @@ func (r *FrequentSmallTransactionsRule) DetectSuspiciousActivity(txn model.Trans
 	}
 
 	count := len(recentTxns)
-	if count > r.MaxCount {
+	if count > r.maxCount {
 		return true, frequentSmallTransactionsRuleName, nil
 	}
 
