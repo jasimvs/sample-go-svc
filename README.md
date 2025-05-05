@@ -7,8 +7,8 @@ Lets implement a simple suspicious transactions detecting service. I'll create 2
 
 Lets create some sample business rules to flag a transaction:
 - Flag any transaction over a certain amount
-- Flag a user with more than X transactions below $D within an hour
-- Flag a user with 3 or more consecutive transfer transactions within 5 minutes
+- Flag transactions when more than X transactions by a user below $D within an hour
+- Flag transactions when 3 or more consecutive transfer transactions by a user within 5 minutes
 
 
 ## Design, tradeoffs 
@@ -41,11 +41,17 @@ I will describe my journey for creating this service:
 
 ## Run
 Prerequisites:
-Install Makefile
-Install Golang
+Install Makefile: `brew install make`
+Install Golang: `brew install go`
 
+To run: `make run`
+
+To lint:
 Install golangci-lint: `go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest`
-Install goimports `go install golang.org/x/tools/cmd/goimports@latest`
+Install goimports: `go install golang.org/x/tools/cmd/goimports@latest`
+
+To view pretty JSON output, install jq `brew install jq
+`
 
 ```
 sample-go-svc git:(main) ✗ make      
@@ -61,7 +67,7 @@ Available targets:
   tidy       Tidy Go module files
   ```
 
-Modify port in config.yaml, set to 9090
+Modify port in config.yaml, it's set to 9090 by default
 
 ## Use
 
@@ -69,7 +75,29 @@ Modify port in config.yaml, set to 9090
 curl -v -X POST http://localhost:9090/api/v1/transaction \
      -H "Content-Type: application/json" \
      -d '{ "userId":"user_1", "amount": 41005.00, "type": "withdrawal"}'
+
+Response:
+{"id":"tx_a81bd484-8c2c-43dd-a8d2-63994c22fb40","userId":"user_1","amount":41005,"type":"withdrawal","timestamp":"2025-05-05T19:45:30.090705Z"}
+
 ```
+
+
 ```
 curl -X GET "http://localhost:9090/api/v1/transactions?user_id=user_1&suspicious=true" | jq .
+
+Response:
+[
+  {
+    "id": "tx_cd7bb804-afc0-46fc-b0f2-69eb64951205",
+    "user_id": "user_1",
+    "amount": 41005,
+    "type": "withdrawal",
+    "timestamp": "2025-05-05T19:47:30.500329Z",
+    "is_suspicious": true,
+    "flagged_rules": [
+      "HighVolumeTransaction"
+    ]
+  }
+]
+
 ```

@@ -24,6 +24,9 @@ func NewRapidTransfersRule(repo Repository, minConsecutive int, windowDuration t
 }
 
 func (r *RapidTransfersRule) DetectSuspiciousActivity(txn model.Transaction) (bool, string, error) {
+	if txn.Type != model.TransferType {
+		return false, "", nil
+	}
 
 	windowStart := txn.Timestamp.Add(-r.windowDuration)
 

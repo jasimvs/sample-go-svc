@@ -10,10 +10,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jasimvs/sample-go-svc/internal/model"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 // setupDetectionTestDB creates a test DB, runs migration, and returns the DB and repo.
@@ -106,6 +106,7 @@ func TestDetectionRepository_Get(t *testing.T) {
 		{name: "Filter Since 6 minutes ago", filters: Filter{Since: func(t time.Time) *time.Time { return &t }(now.Add(-6 * time.Minute))}, expectedIDs: []string{"det_get_4", "det_get_3", "det_get_2"}, expectedLength: 3},
 		{name: "Filter Combined User u1, Type deposit, Since 15 min ago", filters: Filter{UserID: "u1", Type: "deposit", Since: func(t time.Time) *time.Time { return &t }(now.Add(-15 * time.Minute))}, expectedIDs: []string{"det_get_4", "det_get_1"}, expectedLength: 2},
 		{name: "Filter Combined User u1, Suspicious true", filters: Filter{UserID: "u1", IsSuspicious: &isTrue}, expectedIDs: []string{"det_get_3"}, expectedLength: 1},
+		{name: "Filter transactions transfer type for a user", filters: Filter{UserID: "u1", Type: model.TransferType}, expectedIDs: []string{"det_get_3"}, expectedLength: 1},
 	}
 
 	for _, tc := range testCases {
